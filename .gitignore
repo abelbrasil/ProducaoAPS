@@ -4,6 +4,11 @@
 # Variáveis de ambiente
 .env
 
+# Streamlit secrets
+.streamlit/
+.streamlit/*
+!.streamlit/secrets.toml.example
+
 # Python
 __pycache__/
 *.pyc
