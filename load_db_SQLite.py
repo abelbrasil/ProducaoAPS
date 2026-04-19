@@ -1,5 +1,5 @@
 from src.pipeline.pipeline import executar_pipeline
-from src.database.load import criar_banco, carregar_dataframe
+from src.database1.load import criar_banco, carregar_dataframe
 
 # executa pipeline
 fato, dim_proc, dim_cal, dim_mun = executar_pipeline()
