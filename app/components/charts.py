@@ -2,12 +2,21 @@ import plotly.express as px
 import streamlit as st
 import pandas as pd
 
+# ==============================
+# CORES PADRÃO
+# ==============================
+
 CORES = {
-    "ST_SOLICITADO": "#1f77b4",
-    "ST_AVALIADO": "#2ca02c",
-    "QT_EXM": "#ff7f0e",
-    "QT_PRC": "#d62728"
+    "ST_SOLICITADO": "#1f77b4",  # azul
+    "ST_AVALIADO": "#2ca02c",    # verde
+    "QT_EXM": "#ff7f0e",         # laranja
+    "QT_PRC": "#d62728",         # vermelho
+    "PCT_AVALIADO": "#9467bd"    # roxo (novo indicador)
 }
+
+# ==============================
+# FUNÇÃO PRINCIPAL
+# ==============================
 
 def render_charts(df):
 
@@ -25,11 +34,11 @@ def render_charts(df):
         .sort_values("COMPETENCIA_DT")
     )
 
-    # garantir categoria ordenada
+    # ordem correta do eixo X
     ordem = df_group["COMPETENCIA"].tolist()
 
     # ==============================
-    # GRÁFICOS
+    # FUNÇÃO AUXILIAR
     # ==============================
 
     def gerar_grafico(coluna, titulo, cor):
@@ -48,27 +57,59 @@ def render_charts(df):
         fig.update_layout(
             xaxis_title="Competência",
             yaxis_title="Valor",
-            xaxis=dict(type="category")  # 🔥 força categórico
+            xaxis=dict(type="category")
         )
 
         return fig
 
+    # ==============================
+    # GRÁFICOS PRINCIPAIS
+    # ==============================
+
     st.plotly_chart(
         gerar_grafico("ST_SOLICITADO", "Exames Solicitados", CORES["ST_SOLICITADO"]),
-        use_container_width=True
+        width="stretch"
     )
 
     st.plotly_chart(
         gerar_grafico("ST_AVALIADO", "Exames Avaliados", CORES["ST_AVALIADO"]),
-        use_container_width=True
+        width="stretch"
     )
 
     st.plotly_chart(
         gerar_grafico("QT_EXM", "Quantidade de Exames", CORES["QT_EXM"]),
-        use_container_width=True
+        width="stretch"
     )
 
     st.plotly_chart(
         gerar_grafico("QT_PRC", "Procedimentos", CORES["QT_PRC"]),
-        use_container_width=True
+        width="stretch"
     )
+
+    # ==============================
+    # NOVO INDICADOR (%)
+    # ==============================
+
+    df_group["PCT_AVALIADO"] = (
+        df_group["ST_AVALIADO"] / df_group["ST_SOLICITADO"]
+    ).replace([float("inf"), -float("inf")], 0).fillna(0)
+
+    fig_pct = px.line(
+        df_group,
+        x="COMPETENCIA",
+        y="PCT_AVALIADO",
+        title="% Exames Avaliados",
+        category_orders={"COMPETENCIA": ordem},
+        markers=True
+    )
+
+    fig_pct.update_traces(line=dict(color=CORES["PCT_AVALIADO"]))
+
+    fig_pct.update_layout(
+        xaxis_title="Competência",
+        yaxis_title="Percentual",
+        xaxis=dict(type="category"),
+        yaxis_tickformat=".0%"
+    )
+
+    st.plotly_chart(fig_pct, width="stretch")
